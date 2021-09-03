@@ -35,20 +35,22 @@ def get_from_cache():
 def get_from_url():
     """Collect all manifest data from sparv-plungin-registry from GitHub."""
     manifests = []
-    resp = requests.get(MANIFESTS_URL).json()
-    # TODO: handle exceptions
-    manifests_list = resp.get("tree", None)
-    for i in manifests_list:
-        man_resp = requests.get(i.get("url")).json()
-        content = b64decode(man_resp.get("content"))
-        yamlcontent = yaml.load(content, Loader=yaml.FullLoader)
-        if len(yamlcontent) == 1:
-            # Manifest is a URL to the actual manifest
-            man_url = yamlcontent.get("manifest")
-            r = requests.get(man_url).content
-            yamlcontent = yaml.load(r, Loader=yaml.FullLoader)
+    try:
+        resp = requests.get(MANIFESTS_URL).json()
+        manifests_list = resp.get("tree", [])
+        for i in manifests_list:
+            man_resp = requests.get(i.get("url")).json()
+            content = b64decode(man_resp.get("content"))
+            yamlcontent = yaml.load(content, Loader=yaml.FullLoader)
+            if len(yamlcontent) == 1:
+                # Manifest is a URL to the actual manifest
+                man_url = yamlcontent.get("manifest")
+                r = requests.get(man_url).content
+                yamlcontent = yaml.load(r, Loader=yaml.FullLoader)
 
-        manifests.append(yamlcontent)
+            manifests.append(yamlcontent)
+    except Exception as e:
+        print(f"Something went wrong: {e}")
     return manifests
 
 

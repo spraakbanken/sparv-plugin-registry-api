@@ -8,3 +8,9 @@ REST-API for listing Sparv plugins and validating plugin manifests.
 ```
 uvicorn main:app --reload
 ```
+
+## Running a production server
+
+```
+gunicorn -k uvicorn.workers.UvicornWorker main:app
+```
